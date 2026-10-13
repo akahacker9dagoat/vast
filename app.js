@@ -1,4 +1,4 @@
-/* app.js - Vast desktop core (lightweight) */
+/* app.js - Vast desktop core (updated: Google search handling and UI tweaks) */
 (() => {
   const state = {
     z: 10,
@@ -75,7 +75,7 @@
 
   // Basic apps
   function openBrowser(){
-    const win = createWindow('Browser',{width:900,height:600});
+    const win = createWindow('Browser',{width:920,height:620});
     const body = win.querySelector('.window-body');
     body.innerHTML = browserUI();
     initBrowser(body);
@@ -99,22 +99,24 @@
       <div class="tabbar" role="tablist"></div>
       <div class="browser-toolbar">
         <div class="nav">
-          <button data-act="back">◀</button>
-          <button data-act="forward">▶</button>
-          <button data-act="reload">⟳</button>
-          <button data-act="home">🏠</button>
+          <button data-act="back" title="Back">◀</button>
+          <button data-act="forward" title="Forward">▶</button>
+          <button data-act="reload" title="Reload">⟳</button>
+          <button data-act="home" title="Home">🏠</button>
         </div>
         <div class="addr">
-          <input class="address" placeholder="Search or enter address" aria-label="Address bar">
-          <button data-act="go">Go</button>
+          <div class="searchbox">
+            <input class="address" placeholder="Search or enter address" aria-label="Address bar">
+            <button class="go" data-act="go">Search</button>
+          </div>
         </div>
         <div style="margin-left:8px;display:flex;gap:6px;align-items:center">
-          <button data-act="newtab">＋</button>
-          <button data-act="bookmark">★</button>
+          <button data-act="newtab" title="New Tab">＋</button>
+          <button data-act="bookmark" title="Bookmark">★</button>
         </div>
       </div>
       <div class="bookmarks" aria-label="Bookmarks bar"></div>
-      <div class="content" style="height:calc(100% - 132px);border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+      <div class="content" style="height:calc(100% - 144px);border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
         <div class="webview-holder" style="flex:1;position:relative">
         </div>
       </div>
@@ -133,43 +135,60 @@
     function saveBookmarks(){localStorage.setItem('vast.bookmarks', JSON.stringify(bstate.bookmarks))}
     function loadBookmarks(){try{return JSON.parse(localStorage.getItem('vast.bookmarks')||'[]')}catch(e){return []}}
 
-    function renderBookmarks(){bookmarksBar.innerHTML=''; bstate.bookmarks.forEach(b=>{const el=document.createElement('button');el.className='bookmark';el.textContent=b.title||b.url; el.title=b.url; el.addEventListener('click',()=>{openInTab(b.url)}); bookmarksBar.appendChild(el)})}
+    function renderBookmarks(){bookmarksBar.innerHTML=''; bstate.bookmarks.forEach(b=>{const el=document.createElement('button');el.className='bookmark';el.textContent=b.title||b.url; el.title=b.url; el.addEventListener('click',()=>{navigateTo(b.url)}); bookmarksBar.appendChild(el)})}
     renderBookmarks();
 
-    function addTab(url){const tab = {id:'t'+Date.now(),url:normalizeUrl(url),title:url,history:[],index:-1}; bstate.tabs.push(tab); bstate.active = bstate.tabs.length-1; renderTabs(); loadTab(bstate.active);}
     function renderTabs(){tabbar.innerHTML=''; bstate.tabs.forEach((t,i)=>{const el=document.createElement('button'); el.className='tab'+(i===bstate.active?' active':''); el.textContent = t.title||t.url; el.addEventListener('click', ()=>{bstate.active=i; renderTabs(); loadTab(i)}); tabbar.appendChild(el)});}
 
+    function isSearchInput(input){ if(!input) return false; input = input.trim(); if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(input)) return false; // has scheme -> not plain search input
+      if(input.includes(' ') || !input.includes('.')) return true; return false; }
+
     function normalizeUrl(input){if(!input) return 'about:blank'; input = input.trim(); if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(input)) return input; // has scheme
-      if(input.includes(' ') || !input.includes('.')){ return state.settings.search + encodeURIComponent(input); }
+      if(isSearchInput(input)){ return state.settings.search + encodeURIComponent(input); }
       // looks like host/path
       return (input.startsWith('http')?input:'https://'+input);
     }
 
-    function openInTab(url){addTab(url)}
+    function isGoogleEngine(){ try{return (state.settings.search||'').includes('google.com') }catch(e){return false} }
+
+    function navigateTo(input){
+      const plainSearch = isSearchInput(input);
+      const url = normalizeUrl(input);
+
+      // If Google is selected as the search engine, open search results externally because Google refuses embedding.
+      if(isGoogleEngine() && (plainSearch || url.startsWith('https://www.google.com/search'))){ window.open(url, '_blank'); return; }
+
+      // otherwise, open in a new Vast tab (iframe)
+      addTab(url);
+    }
+
+    function addTab(url){const tab = {id:'t'+Date.now(),url:normalizeUrl(url),title:url,history:[],index:-1}; bstate.tabs.push(tab); bstate.active = bstate.tabs.length-1; renderTabs(); loadTab(bstate.active);}
+
+    function openInTab(url){ navigateTo(url); }
 
     function loadTab(i){holder.innerHTML=''; const tab = bstate.tabs[i]; if(!tab) return; address.value = tab.url; const iframe = document.createElement('iframe'); iframe.style.width='100%'; iframe.style.height='100%'; iframe.style.border=0; iframe.setAttribute('sandbox','allow-forms allow-scripts allow-same-origin allow-popups'); holder.appendChild(iframe);
       // loading UI
       const loader = document.createElement('div'); loader.className='load-overlay'; loader.textContent = 'Loading...'; loader.style.position='absolute'; loader.style.inset='0'; loader.style.display='flex'; loader.style.alignItems='center'; loader.style.justifyContent='center'; loader.style.background='rgba(0,0,0,0.04)'; holder.appendChild(loader);
 
-      let loaded=false; const to = setTimeout(()=>{ if(!loaded){ loader.textContent = 'This site may refuse to be embedded. Open externally?'; const b = document.createElement('button'); b.textContent='Open in new tab'; b.addEventListener('click', ()=>{window.open(tab.url,'_blank')}); loader.appendChild(b); } }, 9000);
+      let loaded=false; const to = setTimeout(()=>{ if(!loaded){ loader.textContent = 'This site may refuse to be embedded. Open externally?'; const b = document.createElement('button'); b.textContent='Open in new tab'; b.addEventListener('click', ()=>{window.open(tab.url,'_blank')}); loader.appendChild(b); } }, 7000);
 
       iframe.onload = function(){ loaded=true; clearTimeout(to); loader.remove(); try{ tab.title = iframe.contentDocument.title || tab.url }catch(e){ tab.title = tab.url } renderTabs(); };
-      iframe.onerror = function(){loaded=true; clearTimeout(to); loader.textContent = 'Failed to load. Open externally?';}
+      iframe.onerror = function(){loaded=true; clearTimeout(to); loader.textContent = 'Failed to load. Open externally?'; const b = document.createElement('button'); b.textContent='Open in new tab'; b.addEventListener('click', ()=>{window.open(tab.url,'_blank')}); loader.appendChild(b);}
       iframe.src = tab.url;
     }
 
     // toolbar actions
     root.addEventListener('click', e=>{
       const act = e.target.getAttribute('data-act'); if(!act) return;
-      if(act==='go'){const v=address.value; openInTab(v)}
-      if(act==='newtab'){addTab('about:blank')}
+      if(act==='go'){const v=address.value; navigateTo(v)}
+      if(act==='newtab'){ addTab('about:blank') }
       if(act==='bookmark'){ const url = address.value; bstate.bookmarks.push({url, title:url}); saveBookmarks(); renderBookmarks(); }
       if(act==='reload'){ const activeTab = bstate.tabs[bstate.active]; if(activeTab) { loadTab(bstate.active)} }
-      if(act==='home'){ openInTab('https://www.example.com') }
+      if(act==='home'){ navigateTo('https://www.google.com') }
     });
 
     // address enter
-    address.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const v=address.value; openInTab(v); } })
+    address.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const v=address.value; navigateTo(v); } })
 
     // keyboard shortcuts
     root.addEventListener('keydown', e=>{
@@ -179,8 +198,8 @@
       if(e.ctrlKey && e.key.toLowerCase()==='d'){ e.preventDefault(); bstate.bookmarks.push({url:address.value,title:address.value}); saveBookmarks(); renderBookmarks(); }
     }, true);
 
-    // initial tab
-    addTab('https://example.com');
+    // initial tab - show blank so users can perform searches (Google searches open externally)
+    addTab('about:blank');
   }
 
   // Settings UI
@@ -193,6 +212,7 @@
       <h3>Browser</h3>
       <label>Search engine URL: <input id="search-url" style="width:100%"></label>
       <div style="margin-top:12px"><button id="reset-settings">Reset to defaults</button></div>
+      <p style="margin-top:8px;color:var(--muted);font-size:13px">Note: Google search results cannot be embedded inside an iframe. When Google is selected as the search engine, Vast will open searches in your normal browser tab.</p>
     `;
   }
 
