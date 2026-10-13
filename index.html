@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>vaaaaaaaaast — Vast Desktop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-system">
+  <div id="os-root">
+    <div id="wallpaper" tabindex="0"></div>
+
+    <header id="topbar">
+      <div class="brand"> <!-- stylised wordmark -->
+        <span class="logo" aria-hidden="true">
+          v<span style="color:#34A853">a</span><span style="color:#EA4335">a</span><span style="color:#4285F4">a</span><span style="color:#FBBC05">a</span><span style="color:#A142F4">a</span><span style="color:#FF6D01">a</span><span style="color:#00BCD4">a</span><span style="color:#E91E63">a</span><span style="color:#8BC34A">a</span>st
+        </span>
+      </div>
+      <div id="clock" aria-live="polite"></div>
+    </header>
+
+    <main id="desktop" role="application" aria-label="Vast desktop">
+      <ul id="icons" role="list">
+        <li class="icon" data-app="browser" tabindex="0" role="button" aria-label="Browser"><div class="icon-img">🌐</div><div class="icon-label">Browser</div></li>
+        <li class="icon" data-app="settings" tabindex="0" role="button" aria-label="Settings"><div class="icon-img">⚙️</div><div class="icon-label">Settings</div></li>
+        <li class="icon" data-app="files" tabindex="0" role="button" aria-label="Files"><div class="icon-img">📁</div><div class="icon-label">Files</div></li>
+      </ul>
+
+      <div id="windows"></div>
+    </main>
+
+    <nav id="dock" role="navigation" aria-label="Dock">
+      <button id="start-button" aria-haspopup="true" aria-expanded="false">☰</button>
+      <div id="dock-items"></div>
+      <div id="system-tray"></div>
+    </nav>
+
+    <div id="start-menu" class="hidden" role="menu" aria-label="Start menu">
+      <input id="launcher-search" placeholder="Search apps or web" aria-label="Launcher search">
+      <div id="launcher-list"></div>
+    </div>
+
+    <template id="window-template">
+      <section class="window" tabindex="0">
+        <header class="window-header">
+          <div class="window-title">App</div>
+          <div class="window-controls">
+            <button class="min">▁</button>
+            <button class="max">▢</button>
+            <button class="close">✕</button>
+          </div>
+        </header>
+        <div class="window-body"></div>
+        <div class="window-resize" aria-hidden="true"></div>
+      </section>
+    </template>
+
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

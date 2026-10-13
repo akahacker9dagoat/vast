@@ -1,0 +1,62 @@
+/* Vast - styles.css */
+:root{
+  --bg:#f6f7fb;
+  --text:#111214;
+  --muted:#6b7280;
+  --accent:#4285F4;
+  --window:#ffffff;
+  --shadow: 0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px;
+}
+
+/* dark */
+.theme-dark{
+  --bg:#0b1020;
+  --text:#e6eef8;
+  --muted:#9aa4b2;
+  --accent:#7aa7ff;
+  --window:#0f1724;
+  --shadow: 0 10px 30px rgba(2,6,23,0.6);
+}
+
+/* system prefers */
+.theme-system{ }
+
+*{box-sizing:border-box}
+html,body,#os-root{height:100%}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text);}
+#wallpaper{position:fixed;inset:0;background:linear-gradient(135deg,#0ea5b3, #7c3aed);filter:brightness(0.98);}
+#topbar{position:fixed;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:6px 12px;backdrop-filter: blur(6px);}
+.brand .logo{font-weight:700;font-size:18px;display:inline-flex;align-items:center;gap:6px;color:var(--text)}
+#clock{font-size:13px;color:var(--muted);}
+#desktop{padding-top:56px;padding-bottom:56px;height:100%;position:relative}
+#icons{list-style:none;padding:18px;display:flex;flex-direction:column;gap:16px;width:140px}
+.icon{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.icon-img{width:64px;height:64px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:32px;border-radius:12px}
+.icon-label{font-size:13px;color:var(--text)}
+#windows{position:relative;height:100%;}
+.window{position:absolute;width:720px;height:480px;background:var(--window);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.window-header{height:44px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+.window-title{font-weight:600}
+.window-body{flex:1;padding:12px;overflow:auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+.window-controls button{background:transparent;border:0;color:var(--muted);padding:6px;margin-left:6px;border-radius:6px;cursor:pointer}
+.window-controls button:focus{outline:2px solid var(--accent)}
+.window-resize{position:absolute;right:6px;bottom:6px;width:18px;height:18px;cursor:se-resize;border-radius:4px;background:transparent}
+.hidden{display:none}
+#dock{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:12px;padding:6px 12px}
+#start-button{width:44px;height:44px;border-radius:10px;border:0;background:rgba(255,255,255,0.06);cursor:pointer}
+#dock-items{display:flex;gap:8px;flex:1}
+#dock-items button{height:40px;border-radius:8px;padding:6px 10px;border:0;background:rgba(255,255,255,0.04);cursor:pointer}
+#start-menu{position:fixed;left:12px;bottom:76px;width:320px;background:var(--window);box-shadow:var(--shadow);border-radius:12px;padding:12px}
+#launcher-search{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+/* Browser app styles */
+.browser-toolbar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.addr{flex:1;display:flex;gap:6px}
+.addr input{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.tabbar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.tab{padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.03);cursor:pointer}
+.tab.active{background:var(--accent);color:white}
+.bookmarks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.bookmark{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.04);cursor:pointer}
+/* Responsive */
+@media (max-width:720px){.window{width:94%;height:70%}}
